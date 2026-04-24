@@ -1,0 +1,47 @@
+{
+  "name": "@blauwfilms/viewer",
+  "version": "0.1.0",
+  "description": "Minimalist 3D model viewer for the Blauw Films ecosystem. A streamlined open-source alternative to Marmoset Viewer, designed for inline embedding in Webflow Rich Text.",
+  "license": "MIT",
+  "homepage": "https://github.com/blauwfilms/viewer-toolkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blauwfilms/viewer-toolkit",
+    "directory": "packages/viewer"
+  },
+  "main": "./dist/blauw.js",
+  "module": "./dist/blauw.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/blauw.mjs",
+      "require": "./dist/blauw.js"
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && tsc --emitDeclarationOnly --outDir dist",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "three": "^0.165.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.165.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.2.0"
+  },
+  "keywords": [
+    "3d",
+    "viewer",
+    "three.js",
+    "gltf",
+    "glb",
+    "webflow",
+    "embed",
+    "blauw-films"
+  ]
+}

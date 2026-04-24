@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Blauw Viewer — live demo</title>
+
+    <!-- Brand font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Three.js is loaded via esm.sh, which serves pre-resolved ES modules
+         (bare specifiers like `from 'three'` inside OrbitControls.js are
+         rewritten server-side). This avoids needing an importmap, which some
+         embedded iframe sandboxes don't honour.
+
+         In production the real library bundles Three.js via Vite instead, so
+         there's no external CDN dependency at runtime. -->
+    
+
+    <style>
+      /* ---- Host page styles (simulating a Blauw Films blog post) ---- */
+      :root {
+        --text: #1a1a1a;
+        --muted: #6a6a6a;
+        --bg: #f9f9f9;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+      }
+      .post {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 72px 24px 96px;
+      }
+      .eyebrow {
+        display: inline-block;
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #1451eb;
+        margin-bottom: 14px;
+      }
+      h1 {
+        font-weight: 300;
+        font-size: clamp(2rem, 5vw, 2.75rem);
+        line-height: 1.1;
+        letter-spacing: -0.015em;
+        margin: 0 0 16px;
+      }
+      .lede {
+        font-size: 1.125rem;
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+      .byline {
+        font-size: 0.8125rem;
+        color: var(--muted);
+        margin: 0 0 48px;
+      }
+      h2 {
+        font-weight: 300;
+        font-size: 1.5rem;
+        letter-spacing: -0.01em;
+        margin: 64px 0 14px;
+      }
+      p { margin: 0 0 20px; }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.85em;
+        background: #ececec;
+        padding: 1px 5px;
+        border-radius: 1px;
+      }
+      .bview-embed { margin: 28px 0; }
+      .divider {
+        height: 1px;
+        background: #dadada;
+        border: 0;
+        margin: 56px 0 24px;
+      }
+      .footnote {
+        font-size: 0.8125rem;
+        color: var(--muted);
+      }
+      /* Intentionally aggressive — to prove shadow DOM blocks it. */
+      .post * { /* would hit descendants if not shadow-isolated */ }
+    </style>
+  </head>
+
+  <body>
+    <article class="post">
+      <span class="eyebrow">Behind the scenes</span>
+      <h1>Making a helmet with a lot of damage.</h1>
+      <p class="lede">
+        A short piece about rebuilding a weathered sci-fi helmet in glTF,
+        embedded directly in the post so you can inspect every polygon.
+      </p>
+      <p class="byline">By the Blauw Films team · 4 min read</p>
+
+      <p>
+        One of the first things we decided when starting this project was
+        that readers shouldn't have to leave a blog post to inspect the
+        models we're writing about. If an article mentions a texture, a
+        silhouette, or an animation cycle, it should be right there in the
+        flow of the prose.
+      </p>
+
+      <!-- ============ Embed 1 — hero viewer with title + author ============ -->
+      <div
+        class="bview-embed"
+        data-src="https://threejs.org/examples/models/gltf/DamagedHelmet/glTF-Binary/DamagedHelmet.glb"
+        data-title="Damaged Helmet"
+        data-author="Khronos Group — reference PBR test asset"
+        data-auto-rotate="true"
+      ></div>
+
+      <p>
+        What you're looking at above is a physically-based rendered glTF
+        scene, streamed over the network and composited on top of this very
+        page. The viewer is a <code>&lt;div class="bview-embed"&gt;</code>
+        tag that the site-wide Blauw loader script upgraded in place.
+      </p>
+
+      <h2>Same viewer, no chrome, auto-rotate on load</h2>
+
+      <p>
+        Sometimes you don't want a play button or a control bar — you just
+        want the object to sit there and quietly spin like a jewel in a
+        display case. Setting <code>data-no-ui="true"</code> and
+        <code>data-autoplay="true"</code> does exactly that.
+      </p>
+
+      <!-- ============ Embed 2 — minimal, chrome-less, auto-playing ============ -->
+      <div
+        class="bview-embed"
+        data-src="https://threejs.org/examples/models/gltf/DamagedHelmet/glTF-Binary/DamagedHelmet.glb"
+        data-autoplay="true"
+        data-auto-rotate="true"
+        data-no-ui="true"
+        data-height="320"
+      ></div>
+
+      <p>
+        Both embeds share the same engine code. The first reader to press
+        play on any viewer on the page pays the download cost; every other
+        viewer on the page — including this silent second one — borrows
+        from the same loaded Three.js instance.
+      </p>
+
+      <hr class="divider" />
+      <p class="footnote">
+        Source on GitHub · <code>@blauwfilms/viewer</code> ·
+        drag to orbit, scroll to zoom, double-tap the frame to enter
+        fullscreen.
+      </p>
+    </article>
+
+    <!-- ====================================================================
+         Blauw Viewer — demo implementation.
+         Single-file vanilla JS port of the real library, using Three.js r160
+         via ES modules from esm.sh. Runs with zero build step. The real
+         library (packages/viewer) is TypeScript + ESM with Vite code-splitting;
+         the public-facing behaviour is identical.
+         ==================================================================== -->
+    <script type="module">
+      // Diagnostic banner — if imports or the IIFE throw, this makes the
+      // failure visible in the page itself (not just the console).
+      window.addEventListener('error', (e) => {
+        if (!document.getElementById('bview-diag')) {
+          const box = document.createElement('div');
+          box.id = 'bview-diag';
+          box.style.cssText =
+            'position:fixed;top:0;left:0;right:0;padding:10px 16px;' +
+            'background:#c0392b;color:#fff;font:13px/1.4 Roboto,sans-serif;' +
+            'z-index:9999;white-space:pre-wrap;';
+          box.textContent = 'Blauw Viewer error: ' + (e.message || e.error || e);
+          document.body.appendChild(box);
+        }
+      });
+
+      import * as THREE from 'https://esm.sh/three@0.160.0';
+      import { OrbitControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+      import { GLTFLoader } from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+
+      (function () {
+        'use strict';
+
+        // ---------- Scoped stylesheet for the shadow DOM ----------
+        // Brand spec: Roboto, #f9f9f9 / #ececec / #dadada surfaces,
+        // #1a1a1a text, #1451eb primary action, 1px radius, 300-weight titles.
+        const STYLES = `
+:host {
+  all: initial;
+  display: block;
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #1a1a1a;
+  box-sizing: border-box;
+  contain: content;
+  width: 100%;
+}
+*, *::before, *::after { box-sizing: border-box; }
+button { font: inherit; color: inherit; background: transparent; border: 0; padding: 0; cursor: pointer; }
+svg { display: block; }
+
+.viewer { position: relative; width: 100%; background: #f9f9f9; }
+.frame {
+  position: relative; width: 100%;
+  background: #ececec;
+  border: 1px solid #dadada;
+  border-radius: 1px;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+}
+.frame--transparent { background: transparent; }
+.canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; outline: none; }
+.canvas:active { cursor: grabbing; }
+
+.title {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: #1a1a1a;
+  margin: 0;
+}
+.label {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.overlay {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  background-color: #ececec;
+  background-size: cover; background-position: center;
+  cursor: pointer;
+  transition: opacity 280ms ease;
+}
+.overlay--hidden { opacity: 0; pointer-events: none; }
+.overlay::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,0.28) 100%);
+  pointer-events: none;
+}
+.play {
+  position: relative; z-index: 1;
+  width: 64px; height: 64px; border-radius: 50%;
+  background: #1451eb;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+  box-shadow: 0 8px 24px rgba(20,81,235,0.22);
+}
+.play:hover, .play:focus-visible {
+  background: #112347;
+  transform: scale(1.04);
+  box-shadow: 0 10px 28px rgba(17,35,71,0.28);
+  outline: none;
+}
+.play svg { width: 22px; height: 22px; fill: #fff; margin-left: 3px; }
+
+.meta {
+  position: absolute; left: 20px; right: 20px; bottom: 18px; z-index: 1;
+  color: #fff; pointer-events: none;
+}
+.meta .title { color: #fff; margin-bottom: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.25); }
+.meta .label { color: #fff; opacity: 0.88; text-shadow: 0 1px 2px rgba(0,0,0,0.25); }
+
+.loader {
+  position: absolute; inset: 0; z-index: 1;
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; background: #ececec;
+}
+.loader--visible { display: flex; }
+.loader__bar { width: 160px; height: 2px; background: #dadada; border-radius: 1px; overflow: hidden; }
+.loader__fill { height: 100%; width: 0; background: #1451eb; transition: width 180ms ease; }
+.loader__text {
+  font-family: 'Roboto', sans-serif; font-weight: 400;
+  font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;
+  color: #1a1a1a; opacity: 0.55;
+}
+
+.error {
+  position: absolute; inset: 0; z-index: 1;
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; padding: 32px; background: #ececec; text-align: center;
+}
+.error--visible { display: flex; }
+.error__title { font-weight: 400; font-size: 0.9375rem; margin: 0; }
+.error__detail {
+  font-weight: 400; font-size: 0.8125rem; color: #1a1a1a; opacity: 0.55;
+  margin: 0; max-width: 360px;
+}
+
+.controls {
+  position: absolute; bottom: 10px; right: 10px; z-index: 3;
+  display: flex; gap: 4px; padding: 4px;
+  background: rgba(26,26,26,0.72);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border-radius: 1px;
+  opacity: 0; transform: translateY(4px); pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.frame:hover .controls, .frame:focus-within .controls { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.ctrl {
+  width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; border-radius: 1px;
+  transition: background 140ms ease;
+}
+.ctrl:hover, .ctrl:focus-visible { background: rgba(255,255,255,0.14); outline: none; }
+.ctrl--active { background: #1451eb; color: #fff; }
+.ctrl--active:hover, .ctrl--active:focus-visible { background: #112347; }
+.ctrl svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}
+@media (max-width: 520px) {
+  .ctrl { width: 36px; height: 36px; }
+  .ctrl svg { width: 17px; height: 17px; }
+  .play { width: 58px; height: 58px; }
+  .play svg { width: 20px; height: 20px; }
+}
+`;
+
+        const ICONS = {
+          play: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
+          reset:
+            '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>',
+          rotate:
+            '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3L20 4"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5.3L4 20"/><path d="M4 20v-5h5"/></svg>',
+          fullscreen:
+            '<svg viewBox="0 0 24 24"><path d="M4 9V4h5"/><path d="M20 9V4h-5"/><path d="M4 15v5h5"/><path d="M20 15v5h-5"/></svg>',
+          fullscreenExit:
+            '<svg viewBox="0 0 24 24"><path d="M9 4v5H4"/><path d="M15 4v5h5"/><path d="M9 20v-5H4"/><path d="M15 20v-5h5"/></svg>',
+        };
+
+        // ---------- Shared engine state (loaded once per page) ----------
+        let sharedPMREM = null;
+        let sharedEnvTex = null;
+
+        // ---------- UI builder ----------
+        function createUI(shadow, options) {
+          const style = document.createElement('style');
+          style.textContent = STYLES;
+          shadow.appendChild(style);
+
+          const root = document.createElement('div');
+          root.className = 'viewer';
+
+          const frame = document.createElement('div');
+          frame.className = 'frame';
+          frame.tabIndex = 0;
+          frame.setAttribute('aria-label', '3D model viewer');
+          if (options.transparentBackground) frame.classList.add('frame--transparent');
+          if (options.height) {
+            frame.style.aspectRatio = 'auto';
+            frame.style.height =
+              typeof options.height === 'number' ? options.height + 'px' : String(options.height);
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.className = 'canvas';
+
+          const overlay = document.createElement('div');
+          overlay.className = 'overlay';
+          if (options.thumbnailURL) {
+            overlay.style.backgroundImage = 'url("' + escapeCssUrl(options.thumbnailURL) + '")';
+          }
+
+          const playButton = document.createElement('button');
+          playButton.className = 'play';
+          playButton.type = 'button';
+          playButton.setAttribute('aria-label', 'Load 3D model');
+          playButton.innerHTML = ICONS.play;
+          overlay.appendChild(playButton);
+
+          if (options.title || options.author) {
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            if (options.title) {
+              const h = document.createElement('h4');
+              h.className = 'title';
+              h.textContent = options.title;
+              meta.appendChild(h);
+            }
+            if (options.author) {
+              const p = document.createElement('p');
+              p.className = 'label';
+              p.textContent = options.author;
+              meta.appendChild(p);
+            }
+            overlay.appendChild(meta);
+          }
+
+          const loader = document.createElement('div');
+          loader.className = 'loader';
+          const loaderBar = document.createElement('div');
+          loaderBar.className = 'loader__bar';
+          const loaderFill = document.createElement('div');
+          loaderFill.className = 'loader__fill';
+          loaderBar.appendChild(loaderFill);
+          const loaderText = document.createElement('div');
+          loaderText.className = 'loader__text';
+          loaderText.textContent = 'Loading';
+          loader.append(loaderBar, loaderText);
+
+          const errorBox = document.createElement('div');
+          errorBox.className = 'error';
+          const errorTitle = document.createElement('h4');
+          errorTitle.className = 'error__title';
+          const errorDetail = document.createElement('p');
+          errorDetail.className = 'error__detail';
+          errorBox.append(errorTitle, errorDetail);
+
+          let resetButton, rotateButton, fullscreenButton;
+          if (!options.noUserInterface) {
+            const controls = document.createElement('div');
+            controls.className = 'controls';
+            resetButton = makeCtrl(ICONS.reset, 'Reset camera');
+            rotateButton = makeCtrl(ICONS.rotate, 'Auto-rotate');
+            fullscreenButton = makeCtrl(ICONS.fullscreen, 'Fullscreen');
+            if (options.autoRotate) rotateButton.classList.add('ctrl--active');
+            controls.append(resetButton, rotateButton, fullscreenButton);
+            frame.appendChild(controls);
+          }
+
+          frame.append(canvas, loader, errorBox, overlay);
+          root.appendChild(frame);
+          shadow.appendChild(root);
+
+          return {
+            root, frame, canvas, overlay, playButton, resetButton, rotateButton, fullscreenButton,
+            preloadThumbnail() {
+              if (!options.thumbnailURL) return;
+              const img = new Image();
+              img.decoding = 'async';
+              img.src = options.thumbnailURL;
+            },
+            showLoader() {
+              overlay.classList.add('overlay--hidden');
+              loader.classList.add('loader--visible');
+              errorBox.classList.remove('error--visible');
+            },
+            setProgress(f) {
+              loaderFill.style.width = Math.max(0, Math.min(1, f)) * 100 + '%';
+            },
+            showCanvas() {
+              loader.classList.remove('loader--visible');
+              overlay.classList.add('overlay--hidden');
+              errorBox.classList.remove('error--visible');
+            },
+            showError(t, d) {
+              loader.classList.remove('loader--visible');
+              overlay.classList.add('overlay--hidden');
+              errorTitle.textContent = t;
+              errorDetail.textContent = d;
+              errorBox.classList.add('error--visible');
+            },
+            setRotateActive(on) {
+              if (rotateButton) rotateButton.classList.toggle('ctrl--active', on);
+            },
+            setFullscreen(on) {
+              if (fullscreenButton) {
+                fullscreenButton.innerHTML = on ? ICONS.fullscreenExit : ICONS.fullscreen;
+              }
+            },
+          };
+        }
+
+        function makeCtrl(svgMarkup, label) {
+          const b = document.createElement('button');
+          b.className = 'ctrl';
+          b.type = 'button';
+          b.setAttribute('aria-label', label);
+          b.innerHTML = svgMarkup;
+          return b;
+        }
+
+        function escapeCssUrl(url) {
+          return url.replace(/["\\]/g, '\\$&');
+        }
+
+        // ---------- Engine (Three.js, one per viewer) ----------
+        function Engine(canvas, options) {
+          const renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: true,
+            alpha: options.transparent,
+            powerPreference: 'high-performance',
+          });
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+          renderer.outputColorSpace = THREE.SRGBColorSpace;
+          renderer.toneMapping = THREE.ACESFilmicToneMapping;
+          renderer.toneMappingExposure = 1.0;
+
+          const scene = new THREE.Scene();
+          if (!options.transparent) scene.background = new THREE.Color(0xececec);
+
+          // Neutral PBR environment, built once and shared across all viewers.
+          // We render a simple vertical-gradient equirectangular texture and
+          // feed it through PMREMGenerator. Result: clean, brand-neutral
+          // reflections on metallic/glossy surfaces with zero external assets.
+          if (!sharedEnvTex) {
+            const envCanvas = document.createElement('canvas');
+            envCanvas.width = 512;
+            envCanvas.height = 256;
+            const ectx = envCanvas.getContext('2d');
+            const grad = ectx.createLinearGradient(0, 0, 0, 256);
+            grad.addColorStop(0.0, '#f4f4f4');    // sky
+            grad.addColorStop(0.48, '#cccccc');   // upper mid
+            grad.addColorStop(0.52, '#6a6a6a');   // horizon
+            grad.addColorStop(1.0, '#2a2a2a');    // ground
+            ectx.fillStyle = grad;
+            ectx.fillRect(0, 0, 512, 256);
+
+            const envSourceTex = new THREE.CanvasTexture(envCanvas);
+            envSourceTex.mapping = THREE.EquirectangularReflectionMapping;
+            envSourceTex.colorSpace = THREE.SRGBColorSpace;
+
+            sharedPMREM = new THREE.PMREMGenerator(renderer);
+            sharedPMREM.compileEquirectangularShader();
+            sharedEnvTex = sharedPMREM.fromEquirectangular(envSourceTex).texture;
+            envSourceTex.dispose();
+          }
+          scene.environment = sharedEnvTex;
+
+          const camera = new THREE.PerspectiveCamera(40, 1, 0.01, 1000);
+          camera.position.set(2, 1.4, 3);
+
+          const controls = new OrbitControls(camera, canvas);
+          controls.enableDamping = true;
+          controls.dampingFactor = 0.08;
+          controls.autoRotate = !!options.autoRotate;
+          controls.autoRotateSpeed = 0.9;
+          controls.enablePan = true;
+          controls.screenSpacePanning = true;
+
+          let running = false;
+          let rafId = 0;
+          const clock = new THREE.Clock();
+          let mixer = null;
+          let model = null;
+          let initialCam = null;
+
+          function resize() {
+            const parent = canvas.parentElement;
+            if (!parent) return;
+            const w = parent.clientWidth;
+            const h = parent.clientHeight;
+            if (w === 0 || h === 0) return;
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+          }
+          resize();
+          const ro = new ResizeObserver(resize);
+          ro.observe(canvas.parentElement || canvas);
+
+          function frameModel(obj) {
+            const box = new THREE.Box3().setFromObject(obj);
+            if (box.isEmpty()) return;
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z) || 1;
+            const fov = (camera.fov * Math.PI) / 180;
+            const fitDist = maxDim / (2 * Math.tan(fov / 2));
+            const distance = fitDist * 1.35;
+            camera.position
+              .copy(center)
+              .add(new THREE.Vector3(distance * 0.75, distance * 0.45, distance));
+            camera.near = distance / 500;
+            camera.far = distance * 500;
+            camera.updateProjectionMatrix();
+            controls.target.copy(center);
+            controls.minDistance = distance * 0.15;
+            controls.maxDistance = distance * 6;
+            controls.update();
+            initialCam = {
+              position: camera.position.clone(),
+              target: controls.target.clone(),
+            };
+          }
+
+          return {
+            load(url, onProgress) {
+              const loader = new GLTFLoader();
+              return new Promise((resolve, reject) => {
+                loader.load(
+                  url,
+                  (gltf) => {
+                    model = gltf.scene;
+                    scene.add(model);
+                    frameModel(model);
+                    if (gltf.animations && gltf.animations.length > 0) {
+                      mixer = new THREE.AnimationMixer(model);
+                      mixer.clipAction(gltf.animations[0]).play();
+                    }
+                    onProgress && onProgress(1);
+                    resolve();
+                  },
+                  (e) => {
+                    if (onProgress && e.lengthComputable && e.total > 0) {
+                      onProgress(e.loaded / e.total);
+                    }
+                  },
+                  (err) => reject(err),
+                );
+              });
+            },
+            start() {
+              if (running) return;
+              running = true;
+              clock.start();
+              const tick = () => {
+                if (!running) return;
+                rafId = requestAnimationFrame(tick);
+                const dt = clock.getDelta();
+                if (mixer) mixer.update(dt);
+                controls.update();
+                renderer.render(scene, camera);
+              };
+              tick();
+            },
+            stop() {
+              running = false;
+              if (rafId) cancelAnimationFrame(rafId);
+              rafId = 0;
+            },
+            resetCamera() {
+              if (!initialCam) return;
+              camera.position.copy(initialCam.position);
+              controls.target.copy(initialCam.target);
+              controls.update();
+            },
+            toggleAutoRotate() {
+              controls.autoRotate = !controls.autoRotate;
+              return controls.autoRotate;
+            },
+            destroy() {
+              running = false;
+              if (rafId) cancelAnimationFrame(rafId);
+              ro.disconnect();
+              controls.dispose();
+              if (model) scene.remove(model);
+              renderer.dispose();
+            },
+          };
+        }
+
+        // ---------- WebViewer (one per embed) ----------
+        function WebViewer(options) {
+          const resolved = {
+            src: options.src,
+            container: options.container,
+            width: options.width || '100%',
+            height: options.height || null,
+            autoStart: !!options.autoStart,
+            thumbnailURL: options.thumbnailURL || '',
+            noUserInterface: !!options.noUserInterface,
+            transparentBackground: !!options.transparentBackground,
+            title: options.title || '',
+            author: options.author || '',
+            autoRotate: !!options.autoRotate,
+          };
+
+          const host = resolved.container;
+          const shadow = host.shadowRoot || host.attachShadow({ mode: 'open' });
+          const ui = createUI(shadow, resolved);
+
+          let engine = null;
+          let state = 'idle';
+
+          async function start() {
+            if (state === 'loading' || state === 'loaded') return;
+            state = 'loading';
+            ui.showLoader();
+            try {
+              engine = Engine(ui.canvas, {
+                transparent: resolved.transparentBackground,
+                autoRotate: resolved.autoRotate,
+              });
+              await engine.load(resolved.src, (p) => ui.setProgress(p));
+              engine.start();
+              state = 'loaded';
+              ui.showCanvas();
+            } catch (err) {
+              console.error('[blauw] load failed:', err);
+              state = 'error';
+              ui.showError(
+                'Unable to load 3D content',
+                (err && err.message) || 'The file could not be retrieved.',
+              );
+            }
+          }
+
+          ui.playButton.addEventListener('click', start);
+          ui.overlay.addEventListener('click', (e) => {
+            if (e.target !== ui.playButton) start();
+          });
+          if (ui.resetButton) ui.resetButton.addEventListener('click', () => engine && engine.resetCamera());
+          if (ui.rotateButton) {
+            ui.rotateButton.addEventListener('click', () => {
+              if (!engine) return;
+              ui.setRotateActive(engine.toggleAutoRotate());
+            });
+          }
+          if (ui.fullscreenButton) {
+            ui.fullscreenButton.addEventListener('click', async () => {
+              try {
+                if (document.fullscreenElement === ui.frame) await document.exitFullscreen();
+                else await ui.frame.requestFullscreen();
+              } catch (e) { /* ignore */ }
+            });
+          }
+          document.addEventListener('fullscreenchange', () => {
+            ui.setFullscreen(document.fullscreenElement === ui.frame);
+          });
+
+          if (resolved.autoStart) start();
+
+          return { start, stop: () => engine && engine.stop(), get isLoaded() { return state === 'loaded'; } };
+        }
+
+        // ---------- Scanner ----------
+        const INIT = 'data-bview-init';
+        function boolAttr(el, name) {
+          const v = el.getAttribute(name);
+          if (v === null) return false;
+          return v === '' || v === 'true' || v === '1';
+        }
+        function strAttr(el, name) {
+          const v = el.getAttribute(name);
+          return v === null ? undefined : v;
+        }
+
+        function scan(root) {
+          root = root || document;
+          const els = root.querySelectorAll('.bview-embed:not([' + INIT + '])');
+          const out = [];
+          els.forEach(function (el) {
+            if (!(el instanceof HTMLElement)) return;
+            const src = el.getAttribute('data-src');
+            if (!src) {
+              console.warn('[blauw] .bview-embed missing data-src; skipping', el);
+              return;
+            }
+            el.setAttribute(INIT, '1');
+            try {
+              out.push(
+                WebViewer({
+                  src: src,
+                  container: el,
+                  width: strAttr(el, 'data-width'),
+                  height: strAttr(el, 'data-height'),
+                  autoStart: boolAttr(el, 'data-autoplay'),
+                  thumbnailURL: strAttr(el, 'data-thumbnail'),
+                  noUserInterface: boolAttr(el, 'data-no-ui'),
+                  transparentBackground: boolAttr(el, 'data-transparent'),
+                  title: strAttr(el, 'data-title'),
+                  author: strAttr(el, 'data-author'),
+                  autoRotate: boolAttr(el, 'data-auto-rotate'),
+                }),
+              );
+            } catch (e) {
+              console.error('[blauw] init failed', e, el);
+              el.removeAttribute(INIT);
+            }
+          });
+          return out;
+        }
+
+        // Install global + auto-scan
+        window.blauw = { scan: scan, embed: function (src, opts) { opts = opts || {}; opts.src = src; return WebViewer(opts); } };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function () { scan(); }, { once: true });
+        } else {
+          scan();
+        }
+      })();
+    </script>
+  </body>
+</html>

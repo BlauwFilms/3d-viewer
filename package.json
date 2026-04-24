@@ -1,0 +1,16 @@
+{
+  "name": "blauw-viewer-toolkit",
+  "version": "0.1.0",
+  "description": "Open-source 3D viewer and editor for the Blauw Films ecosystem.",
+  "private": true,
+  "license": "MIT",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build": "npm run build --workspace=@blauwfilms/viewer",
+    "dev": "npm run dev --workspace=@blauwfilms/viewer",
+    "typecheck": "npm run typecheck --workspace=@blauwfilms/viewer"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

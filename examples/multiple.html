@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Blauw Viewer — multiple embeds</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Roboto', sans-serif;
+        background: #f9f9f9;
+        color: #1a1a1a;
+      }
+      .page {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 64px 24px;
+      }
+      h1 {
+        font-weight: 300;
+        font-size: 2rem;
+        margin: 0 0 12px;
+      }
+      h2 {
+        font-weight: 300;
+        font-size: 1.5rem;
+        margin: 56px 0 12px;
+      }
+      p {
+        line-height: 1.65;
+        margin: 0 0 20px;
+      }
+      .muted {
+        opacity: 0.6;
+      }
+    </style>
+  </head>
+  <body>
+    <article class="page">
+      <h1>Three embeds on one page.</h1>
+      <p class="muted">
+        Each viewer is its own shadow-DOM instance with its own canvas. The
+        engine chunk (Three.js) is only fetched once across all of them.
+      </p>
+
+      <h2>Default — with title and author</h2>
+      <div
+        class="bview-embed"
+        data-src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb"
+        data-title="Damaged Helmet"
+        data-author="Khronos glTF sample"
+      ></div>
+
+      <h2>Auto-rotate, no on-screen UI</h2>
+      <p class="muted">
+        <code>data-no-ui="true"</code> strips the control bar entirely — good
+        for hero placements where you don't want chrome.
+      </p>
+      <div
+        class="bview-embed"
+        data-src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF-Binary/Avocado.glb"
+        data-auto-rotate="true"
+        data-no-ui="true"
+        data-height="360"
+      ></div>
+
+      <h2>Transparent background</h2>
+      <p class="muted">
+        <code>data-transparent="true"</code> lets whatever's behind the viewer
+        show through the frame. Useful on non-default page backgrounds.
+      </p>
+      <div
+        class="bview-embed"
+        data-src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BoomBox/glTF-Binary/BoomBox.glb"
+        data-transparent="true"
+        data-auto-rotate="true"
+      ></div>
+    </article>
+
+    <script type="module" src="../packages/viewer/src/index.ts"></script>
+  </body>
+</html>

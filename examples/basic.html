@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Blauw Viewer — basic embed</title>
+
+    <!-- Roboto, as per Blauw Films brand spec -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Roboto', sans-serif;
+        background: #f9f9f9;
+        color: #1a1a1a;
+      }
+      .page {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 64px 24px;
+      }
+      h1 {
+        font-weight: 300;
+        font-size: 2rem;
+        letter-spacing: -0.01em;
+        margin: 0 0 12px;
+      }
+      .lede {
+        color: #1a1a1a;
+        opacity: 0.6;
+        margin: 0 0 48px;
+      }
+      p {
+        line-height: 1.65;
+        margin: 0 0 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <article class="page">
+      <h1>A short blog post with a 3D model in it.</h1>
+      <p class="lede">
+        This page shows what an inline Blauw Viewer embed looks like from a
+        reader's perspective.
+      </p>
+
+      <p>
+        We open with a paragraph of body copy, because nothing dates a blog
+        post faster than a page that's nothing but media. Readers need context
+        and rhythm before the hero moment arrives.
+      </p>
+
+      <!-- One inline 3D embed. The site-wide loader script below will
+           find this div on DOMContentLoaded and upgrade it in place. -->
+      <div
+        class="bview-embed"
+        data-src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb"
+        data-title="Damaged Helmet"
+        data-author="Leonardo de Araujo, for Khronos glTF samples"
+        data-auto-rotate="true"
+      ></div>
+
+      <p>
+        Then a second paragraph continues the piece. The 3D viewer above is
+        fully interactive — click to load, drag to orbit, scroll to zoom,
+        enter fullscreen if you want to get immersive about it.
+      </p>
+
+      <p>
+        Everything inside the viewer lives in a shadow DOM, so nothing that
+        Webflow does to the surrounding article can style it, and nothing the
+        viewer does can style the rest of the page. It's self-contained by
+        design.
+      </p>
+    </article>
+
+    <!-- In production this script lives once, site-wide, in Webflow's
+         Project Settings → Custom Code → Head. During development we
+         reference the local source entry directly. -->
+    <script type="module" src="../packages/viewer/src/index.ts"></script>
+  </body>
+</html>

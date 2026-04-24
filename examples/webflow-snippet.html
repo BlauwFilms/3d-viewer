@@ -1,0 +1,86 @@
+<!--
+  Blauw Viewer — Webflow integration snippet
+  ==========================================
+
+  This file is a reference for the content team, not an executable page.
+  It shows EXACTLY what goes where in Webflow.
+-->
+
+
+<!--
+  STEP 1 — Site-wide, one time.
+  Webflow Dashboard → Project Settings → Custom Code → Head Code.
+  Save, then republish the site.
+-->
+<script type="module" src="https://cdn.blauwfilms.com/viewer/v1/blauw.mjs"></script>
+
+
+<!--
+  STEP 2 — Per blog post.
+  Inside a Rich Text element, add an "HTML Embed" block wherever you want
+  the viewer to appear, and paste ONE of the snippets below.
+
+  The data-src URL is the public URL of a .glb (or later, .bview) file you
+  uploaded to Webflow's Asset Library.
+-->
+
+
+<!-- Minimal embed -->
+<div
+  class="bview-embed"
+  data-src="https://uploads-ssl.webflow.com/ORG/FILE.glb"
+></div>
+
+
+<!-- With title + author shown on the play-screen overlay -->
+<div
+  class="bview-embed"
+  data-src="https://uploads-ssl.webflow.com/ORG/FILE.glb"
+  data-title="Scene title"
+  data-author="Artist name"
+></div>
+
+
+<!-- Custom height (default is a responsive 16:10 box) -->
+<div
+  class="bview-embed"
+  data-src="https://uploads-ssl.webflow.com/ORG/FILE.glb"
+  data-height="480"
+></div>
+
+
+<!-- Auto-rotate on load, no UI controls, transparent background -->
+<div
+  class="bview-embed"
+  data-src="https://uploads-ssl.webflow.com/ORG/FILE.glb"
+  data-auto-rotate="true"
+  data-no-ui="true"
+  data-transparent="true"
+></div>
+
+
+<!-- Skip the play-to-load gate, begin streaming the file immediately -->
+<div
+  class="bview-embed"
+  data-src="https://uploads-ssl.webflow.com/ORG/FILE.glb"
+  data-autoplay="true"
+></div>
+
+
+<!--
+  All supported attributes:
+
+  data-src             Required. URL to a .glb / .gltf file.
+  data-title           Optional. Shown on the play overlay.
+  data-author          Optional. Shown under the title.
+  data-thumbnail       Optional. Custom image URL for the overlay.
+  data-height          Optional. CSS height value (e.g. "480" or "30rem").
+                       When omitted, the frame uses a 16:10 responsive ratio.
+  data-width           Optional. CSS width value. Defaults to 100%.
+  data-autoplay        "true" to start loading immediately. Default: false.
+  data-auto-rotate     "true" to slowly rotate the model. Default: false.
+  data-no-ui           "true" to hide the control bar entirely. Default: false.
+  data-transparent     "true" for a transparent frame background.
+                       Default: false (uses brand grey #ececec).
+  data-full-frame      "true" to stretch to the containing window/iframe.
+-->

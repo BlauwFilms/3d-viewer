@@ -1,0 +1,422 @@
+/*
+ * Blauw Viewer — shadow DOM stylesheet.
+ *
+ * Scoped to :host so it cannot leak to the page, and cannot be overridden
+ * by the page's own CSS. All class names are intentionally short because
+ * they only exist inside this shadow tree.
+ *
+ * Brand spec (locked in by Blauw Films):
+ *   Font             — Roboto, 300 weight titles
+ *   Body background  — #f9f9f9
+ *   Frame background — #ececec, 1px #dadada border, 1px radius
+ *   Primary action   — #1451eb, hover #112347
+ *   Focus border     — #1451eb
+ *   Text             — #1a1a1a
+ */
+
+:host {
+  all: initial;
+  display: block;
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #1a1a1a;
+  box-sizing: border-box;
+  contain: content;
+  width: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+svg {
+  display: block;
+}
+
+/* ---------- Structure ---------- */
+
+.viewer {
+  position: relative;
+  width: 100%;
+  background: #f9f9f9;
+}
+
+.frame {
+  position: relative;
+  width: 100%;
+  background: #ececec;
+  border: 1px solid #dadada;
+  border-radius: 1px;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+}
+
+.frame--transparent {
+  background: transparent;
+}
+
+.frame--fullscreen {
+  aspect-ratio: auto;
+  border-radius: 0;
+  border: 0;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+  outline: none;
+}
+
+.canvas:active {
+  cursor: grabbing;
+}
+
+/* ---------- Typography ---------- */
+
+.title {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.label {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.label--muted {
+  opacity: 0.6;
+}
+
+/* ---------- Play overlay (idle state) ---------- */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ececec;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  transition: opacity 280ms ease;
+  z-index: 2;
+}
+
+.overlay--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 45%,
+    rgba(0, 0, 0, 0.28) 100%
+  );
+  pointer-events: none;
+}
+
+.play {
+  position: relative;
+  z-index: 1;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #1451eb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+  box-shadow: 0 8px 24px rgba(20, 81, 235, 0.22);
+}
+
+.play:hover,
+.play:focus-visible {
+  background: #112347;
+  transform: scale(1.04);
+  box-shadow: 0 10px 28px rgba(17, 35, 71, 0.28);
+  outline: none;
+}
+
+.play svg {
+  width: 22px;
+  height: 22px;
+  fill: #ffffff;
+  margin-left: 3px; /* optical centering for a triangle */
+}
+
+.meta {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 18px;
+  z-index: 1;
+  color: #ffffff;
+  pointer-events: none;
+}
+
+.meta .title {
+  color: #ffffff;
+  margin-bottom: 2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.meta .label {
+  color: #ffffff;
+  opacity: 0.88;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------- Loader ---------- */
+
+.loader {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: #ececec;
+  z-index: 1;
+}
+
+.loader--visible {
+  display: flex;
+}
+
+.loader__bar {
+  width: 160px;
+  height: 2px;
+  background: #dadada;
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.loader__fill {
+  height: 100%;
+  width: 0;
+  background: #1451eb;
+  transition: width 180ms ease;
+}
+
+.loader__text {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  opacity: 0.55;
+}
+
+/* ---------- Error ---------- */
+
+.error {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 32px;
+  background: #ececec;
+  text-align: center;
+  z-index: 1;
+}
+
+.error--visible {
+  display: flex;
+}
+
+.error__title {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 0.9375rem;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.error__detail {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 0.8125rem;
+  color: #1a1a1a;
+  opacity: 0.55;
+  margin: 0;
+  max-width: 360px;
+}
+
+/* ---------- Controls (bottom-right) ---------- */
+
+.controls {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 3;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(26, 26, 26, 0.72);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border-radius: 1px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+  pointer-events: none;
+}
+
+.frame:hover .controls,
+.frame:focus-within .controls,
+.controls--pinned {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.ctrl {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  border-radius: 1px;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.ctrl:hover,
+.ctrl:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+  outline: none;
+}
+
+.ctrl--active {
+  background: #1451eb;
+  color: #ffffff;
+}
+
+.ctrl--active:hover,
+.ctrl--active:focus-visible {
+  background: #112347;
+}
+
+.ctrl svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- Buttons (general, reusable) ---------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1;
+  color: #ffffff;
+  background: #1451eb;
+  border-radius: 1px;
+  transition: background 150ms ease;
+}
+
+.button:hover,
+.button:focus-visible {
+  background: #112347;
+  outline: none;
+}
+
+/* ---------- Form fields (reserved for future inline config UI) ---------- */
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.875rem;
+  color: #1a1a1a;
+  background: #ffffff;
+  border: 1px solid #dadada;
+  border-radius: 1px;
+  transition: border-color 140ms ease;
+}
+
+.input:focus {
+  border-color: #1451eb;
+  outline: none;
+}
+
+/* ---------- Accessibility ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}
+
+/* Small screens — controls a touch larger for fingers */
+@media (max-width: 520px) {
+  .ctrl {
+    width: 36px;
+    height: 36px;
+  }
+  .ctrl svg {
+    width: 17px;
+    height: 17px;
+  }
+  .play {
+    width: 58px;
+    height: 58px;
+  }
+  .play svg {
+    width: 20px;
+    height: 20px;
+  }
+}
