@@ -1,71 +1,71 @@
 name: CI & Release
 
-   on:
-     push:
-       branches: [main]
-       tags: ['v*.*.*']
-     pull_request:
-       branches: [main]
-     workflow_dispatch:
+on:
+  push:
+    branches: [main]
+    tags: ['v*.*.*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 
-   permissions:
-     contents: write
+permissions:
+  contents: write
 
-   jobs:
-     build:
-       runs-on: ubuntu-latest
-       steps:
-         - name: Checkout
-           uses: actions/checkout@v4
-           with:
-             fetch-depth: 0
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-         - name: Setup Node
-           uses: actions/setup-node@v4
-           with:
-             node-version: 20
-             cache: npm
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
-         - name: Install
-           run: npm ci
+      - name: Install
+        run: npm ci
 
-         - name: Type-check
-           run: npm run typecheck
+      - name: Type-check
+        run: npm run typecheck
 
-         - name: Build
-           run: npm run build
+      - name: Build
+        run: npm run build
 
-         - name: Report bundle sizes
-           run: |
-             echo "## Bundle sizes" >> "$GITHUB_STEP_SUMMARY"
-             echo '```' >> "$GITHUB_STEP_SUMMARY"
-             ls -lh packages/viewer/dist/*.{mjs,js} 2>/dev/null | awk '{print $5"\t"$NF}' >> "$GITHUB_STEP_SUMMARY" || true
-             echo '```' >> "$GITHUB_STEP_SUMMARY"
+      - name: Report bundle sizes
+        run: |
+          echo "## Bundle sizes" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          ls -lh packages/viewer/dist/*.{mjs,js} 2>/dev/null | awk '{print $5"\t"$NF}' >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
 
-         # The steps below only run for tag pushes (v0.1.0, v1.2.3, etc.).
-         # They commit the built dist/ folder back to main so jsDelivr can
-         # serve the exact files that were built from that tag.
-         - name: Configure Git identity
-           if: startsWith(github.ref, 'refs/tags/v')
-           run: |
-             git config user.name "blauw-release-bot"
-             git config user.email "bot@blauwfilms.com"
+      # The steps below only run for tag pushes (v0.1.0, v1.2.3, etc.).
+      # They commit the built dist/ folder back to main so jsDelivr can
+      # serve the exact files that were built from that tag.
+      - name: Configure Git identity
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          git config user.name "blauw-release-bot"
+          git config user.email "bot@blauwfilms.com"
 
-         - name: Commit built dist/ and push tag
-           if: startsWith(github.ref, 'refs/tags/v')
-           run: |
-             set -euo pipefail
-             TAG="${GITHUB_REF#refs/tags/}"
+      - name: Commit built dist/ and push tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF#refs/tags/}"
 
-             git checkout main
-             git add -f packages/viewer/dist
-             if git diff --cached --quiet; then
-               echo "No dist changes to commit."
-             else
-               git commit -m "Build dist/ for ${TAG}"
-               git push origin main
-             fi
+          git checkout main
+          git add -f packages/viewer/dist
+          if git diff --cached --quiet; then
+            echo "No dist changes to commit."
+          else
+            git commit -m "Build dist/ for ${TAG}"
+            git push origin main
+          fi
 
-             # Re-tag on the new commit so the tag points at the build.
-             git tag -f "$TAG"
-             git push origin "$TAG" --force
+          # Re-tag on the new commit so the tag points at the build.
+          git tag -f "$TAG"
+          git push origin "$TAG" --force
