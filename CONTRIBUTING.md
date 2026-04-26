@@ -64,8 +64,9 @@ All optional except `data-src`. Add or remove attributes from the `<div>` as nee
 | Attribute            | What it does                                                              | Default       |
 | -------------------- | ------------------------------------------------------------------------- | ------------- |
 | `data-src`           | URL to the `.glb` file. **Required.**                                     | —             |
-| `data-title`         | Title shown on the play screen.                                           | —             |
-| `data-author`        | Credit line shown under the title.                                        | —             |
+| `data-title`         | Title shown at the top of the play screen.                                | —             |
+| `data-world`         | "World" / project / collection label, rendered as `World: <value>` below the title. | — |
+| `data-author`        | Credit line shown below the world line.                                   | —             |
 | `data-auto-rotate`   | `"true"` to slowly rotate the model after loading.                        | `false`       |
 | `data-autoplay`      | `"true"` to load immediately (skips the play-to-load gate).               | `false`       |
 | `data-no-ui`         | `"true"` to hide the bottom-right control bar.                            | `false`       |

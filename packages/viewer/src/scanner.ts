@@ -45,6 +45,7 @@ export function scan(root: ParentNode = document): WebViewer[] {
       noUserInterface: bool(el, 'data-no-ui'),
       transparentBackground: bool(el, 'data-transparent'),
       title: attr(el, 'data-title'),
+      world: attr(el, 'data-world'),
       author: attr(el, 'data-author'),
       autoRotate: bool(el, 'data-auto-rotate'),
     };

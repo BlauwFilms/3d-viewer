@@ -20,9 +20,11 @@ export interface EmbedOptions {
     noUserInterface?: boolean;
     /** Render with a transparent background. Default: false. */
     transparentBackground?: boolean;
-    /** Optional display title (shown on overlay). */
+    /** Optional display title (shown at top of overlay). */
     title?: string;
-    /** Optional author label (shown on overlay). */
+    /** Optional "world" label — the project, universe, or collection this scene belongs to. Rendered below the title as "World: <value>". */
+    world?: string;
+    /** Optional author / credit label (shown below the world line). */
     author?: string;
     /** Auto-rotate the camera when loaded. Default: false. */
     autoRotate?: boolean;

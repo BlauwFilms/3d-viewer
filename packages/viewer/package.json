@@ -1,6 +1,6 @@
 {
   "name": "@blauwfilms/viewer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Minimalist 3D model viewer for the Blauw Films ecosystem. A streamlined open-source alternative to Marmoset Viewer, designed for inline embedding in Webflow Rich Text.",
   "license": "MIT",
   "homepage": "https://github.com/blauwfilms/viewer-toolkit",

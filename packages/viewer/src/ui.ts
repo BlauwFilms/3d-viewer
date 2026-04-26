@@ -80,21 +80,16 @@ export function createUI(
   const canvas = document.createElement('canvas');
   canvas.className = 'canvas';
 
-  // Overlay (thumbnail + play button)
+  // Overlay (idle state — thumbnail + meta + play button + CTA)
   const overlay = document.createElement('div');
   overlay.className = 'overlay';
   if (options.thumbnailURL) {
     overlay.style.backgroundImage = `url("${escapeCssUrl(options.thumbnailURL)}")`;
   }
 
-  const playButton = document.createElement('button');
-  playButton.className = 'play';
-  playButton.type = 'button';
-  playButton.setAttribute('aria-label', 'Load 3D model');
-  playButton.innerHTML = ICONS.play;
-  overlay.appendChild(playButton);
-
-  if (options.title || options.author) {
+  // Top-anchored meta block: title, world line, author. Each line is optional;
+  // missing lines simply collapse so the block sizes naturally.
+  if (options.title || options.world || options.author) {
     const meta = document.createElement('div');
     meta.className = 'meta';
     if (options.title) {
@@ -103,13 +98,44 @@ export function createUI(
       h.textContent = options.title;
       meta.appendChild(h);
     }
+    if (options.world) {
+      const p = document.createElement('p');
+      p.className = 'label label--world';
+      // The "World:" prefix is rendered as a separate span so designers can
+      // restyle the prefix differently from the value if they ever need to.
+      const prefix = document.createElement('span');
+      prefix.className = 'label__prefix';
+      prefix.textContent = 'World: ';
+      const value = document.createElement('span');
+      value.textContent = options.world;
+      p.append(prefix, value);
+      meta.appendChild(p);
+    }
     if (options.author) {
       const p = document.createElement('p');
-      p.className = 'label';
+      p.className = 'label label--author';
       p.textContent = options.author;
       meta.appendChild(p);
     }
     overlay.appendChild(meta);
+  }
+
+  // Play button — centered.
+  const playButton = document.createElement('button');
+  playButton.className = 'play';
+  playButton.type = 'button';
+  playButton.setAttribute('aria-label', 'Load 3D model');
+  playButton.innerHTML = ICONS.play;
+  overlay.appendChild(playButton);
+
+  // Bottom call-to-action — always shown unless noUserInterface is set.
+  // Communicates "this is interactive 3D content" without needing a real
+  // thumbnail to do the same job.
+  if (!options.noUserInterface) {
+    const cta = document.createElement('p');
+    cta.className = 'cta';
+    cta.textContent = 'View the 3D Model';
+    overlay.appendChild(cta);
   }
 
   // Loader
@@ -146,6 +172,7 @@ export function createUI(
     resetButton = makeCtrl(ICONS.reset, 'Reset camera');
     rotateButton = makeCtrl(ICONS.rotate, 'Auto-rotate');
     fullscreenButton = makeCtrl(ICONS.fullscreen, 'Fullscreen');
+    fullscreenButton.classList.add('ctrl--fullscreen');
 
     if (options.autoRotate) rotateButton.classList.add('ctrl--active');
 

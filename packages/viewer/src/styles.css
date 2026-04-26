@@ -110,14 +110,26 @@ svg {
   opacity: 0.6;
 }
 
-/* ---------- Play overlay (idle state) ---------- */
+/* ---------- Play overlay (idle state) ----------
+ *
+ * Layout: column flex with three rows from top to bottom.
+ *   row 1 — meta block (title, world, author lines)
+ *   row 2 — play button, centered
+ *   row 3 — CTA ("View the 3D Model")
+ *
+ * Two gradient layers darken the top and bottom edges so white text remains
+ * legible regardless of the thumbnail behind. They sit in ::before and
+ * ::after pseudo-elements so they don't add nodes to the DOM.
+ */
 
 .overlay {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  padding: 28px 24px;
   background-color: #ececec;
   background-size: cover;
   background-position: center;
@@ -132,18 +144,72 @@ svg {
   pointer-events: none;
 }
 
-.overlay::after {
+/* Top gradient — frames the title block */
+.overlay::before {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: 0 0 auto 0;
+  height: 40%;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0) 45%,
-    rgba(0, 0, 0, 0.28) 100%
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0) 100%
   );
   pointer-events: none;
 }
 
+/* Bottom gradient — frames the CTA line */
+.overlay::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 30%;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.15) 100%
+  );
+  pointer-events: none;
+}
+
+/* Title / world / author block — top of the overlay, centered */
+.meta {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  text-align: center;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 90%;
+}
+
+.meta .title {
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.meta .label {
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* "World:" prefix is set slightly lower in opacity so the value reads as
+ * the actual content. Same color, same weight, just a touch quieter. */
+.meta .label--world .label__prefix {
+  opacity: 0.7;
+}
+
+/* Author line is overall a notch quieter than title and world */
+.meta .label--author {
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+/* Play button — centered between meta and CTA */
 .play {
   position: relative;
   z-index: 1;
@@ -176,26 +242,29 @@ svg {
   margin-left: 3px; /* optical centering for a triangle */
 }
 
-.meta {
-  position: absolute;
-  left: 20px;
-  right: 20px;
-  bottom: 18px;
+/* "View the 3D Model" — bottom of the overlay, centered */
+.cta {
+  position: relative;
   z-index: 1;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
   color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   pointer-events: none;
 }
 
-.meta .title {
-  color: #ffffff;
-  margin-bottom: 2px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+/* When no meta is provided the overlay needs a placeholder element above the
+ * play button to keep the play centered. We use the absence-friendly
+ * `:has()` selector to push the play down with margin-top auto when meta is
+ * missing — falling back to natural flex spacing if :has() is unsupported. */
+.overlay:not(:has(.meta)) .play {
+  margin-top: auto;
 }
-
-.meta .label {
-  color: #ffffff;
-  opacity: 0.88;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+.overlay:not(:has(.cta)) .play {
+  margin-bottom: auto;
 }
 
 /* ---------- Loader ---------- */
@@ -401,7 +470,19 @@ svg {
   }
 }
 
-/* Small screens — controls a touch larger for fingers */
+/* ---------- Small-screen adjustments ---------- */
+
+/* Tablet & smaller — hide the fullscreen control entirely.
+ * iOS Safari doesn't support the fullscreen API on arbitrary elements at
+ * all, and the experience on small screens isn't meaningfully better than
+ * the inline view, so the button comes off rather than misleading users. */
+@media (max-width: 767px) {
+  .ctrl--fullscreen {
+    display: none;
+  }
+}
+
+/* Phones — controls slightly larger for fingers, overlay scaled down. */
 @media (max-width: 520px) {
   .ctrl {
     width: 36px;
@@ -418,5 +499,17 @@ svg {
   .play svg {
     width: 20px;
     height: 20px;
+  }
+  .overlay {
+    padding: 22px 18px;
+  }
+  .meta .title {
+    font-size: 1.25rem;
+  }
+  .meta .label {
+    font-size: 0.75rem;
+  }
+  .cta {
+    font-size: 0.75rem;
   }
 }

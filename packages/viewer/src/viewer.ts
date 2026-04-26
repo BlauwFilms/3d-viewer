@@ -115,6 +115,7 @@ export class WebViewer {
     this.engine = null;
     if (this.fullscreenHandler) {
       document.removeEventListener('fullscreenchange', this.fullscreenHandler);
+      document.removeEventListener('webkitfullscreenchange', this.fullscreenHandler);
     }
     this.shadow.innerHTML = '';
     this.host.removeAttribute('data-bview-init');
@@ -144,11 +145,19 @@ export class WebViewer {
     );
 
     // Keep the fullscreen icon state in sync when the user hits Esc.
+    // Browsers may report either the shadow host or the frame element as
+    // the active fullscreen element; we accept either. iOS/iPad Safari uses
+    // the webkit-prefixed event and property.
     this.fullscreenHandler = () => {
-      const isFs = (document.fullscreenElement === this.ui.frame || document.fullscreenElement === this.host);
+      const doc = document as Document & {
+        webkitFullscreenElement?: Element | null;
+      };
+      const active = doc.fullscreenElement || doc.webkitFullscreenElement;
+      const isFs = active === this.ui.frame || active === this.host;
       this.ui.setFullscreen(isFs);
     };
     document.addEventListener('fullscreenchange', this.fullscreenHandler);
+    document.addEventListener('webkitfullscreenchange', this.fullscreenHandler);
   }
 
   private setupLazyPreload(): void {
@@ -173,11 +182,30 @@ export class WebViewer {
   }
 
   private async toggleFullscreen(): Promise<void> {
+    const frame = this.ui.frame as HTMLElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+    };
+    const doc = document as Document & {
+      webkitFullscreenElement?: Element | null;
+      webkitExitFullscreen?: () => Promise<void> | void;
+    };
+
+    const isCurrentlyFullscreen =
+      doc.fullscreenElement === frame || doc.webkitFullscreenElement === frame;
+
     try {
-      if ((document.fullscreenElement === this.ui.frame || document.fullscreenElement === this.host)) {
-        await document.exitFullscreen();
+      if (isCurrentlyFullscreen) {
+        if (doc.exitFullscreen) {
+          await doc.exitFullscreen();
+        } else if (doc.webkitExitFullscreen) {
+          await doc.webkitExitFullscreen();
+        }
       } else {
-        await this.ui.frame.requestFullscreen();
+        if (frame.requestFullscreen) {
+          await frame.requestFullscreen();
+        } else if (frame.webkitRequestFullscreen) {
+          await frame.webkitRequestFullscreen();
+        }
       }
     } catch (err) {
       console.warn('[blauw] Fullscreen rejected:', err);
@@ -199,6 +227,7 @@ function resolveOptions(o: EmbedOptions): ResolvedOptions {
     noUserInterface: o.noUserInterface ?? false,
     transparentBackground: o.transparentBackground ?? false,
     title: o.title ?? '',
+    world: o.world ?? '',
     author: o.author ?? '',
     autoRotate: o.autoRotate ?? false,
   };
